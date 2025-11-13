@@ -1,0 +1,3 @@
+Starting heavy operation to simulate OOM...
+ERROR: java.lang.OutOfMemoryError: Java heap space - simulated by demo
+Job failed: java.lang.OutOfMemoryError: Java heap space - simulated by demo

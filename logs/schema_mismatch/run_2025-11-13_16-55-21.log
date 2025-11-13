@@ -1,0 +1,1 @@
+Job failed: SchemaMismatchError: missing columns: ['amount']; extra columns: ['amt']

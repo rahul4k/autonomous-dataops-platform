@@ -1,0 +1,4 @@
+INFO: total_records=100000, hotkey_count=95063, skew_ratio=0.951
+INFO: Estimated shuffle_bytes ~ 20000000
+WARN: PerformanceAlert: extreme key skew detected on column sk, skew_ratio=0.951
+Job failed: PerformanceAlert: extreme key skew detected on column sk, skew_ratio=0.951
