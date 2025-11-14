@@ -1,0 +1,16 @@
+{
+  "applied": true,
+  "patch_path": "pipeline/jobs/schema_mismatch_job.py.patch",
+  "patched_file_path": "pipeline/jobs/schema_mismatch_job.py.patched",
+  "patch_text": "--- pipeline/jobs/schema_mismatch_job.py\n+++ pipeline/jobs/schema_mismatch_job.py.patched\n@@ -5,6 +5,7 @@\n def run():\n     # Simulated schema expectation\n     expected_columns = {\"user_id\", \"name\", \"created_at\", \"amount\"}\n+expected_columns = expected_columns.withColumnRenamed('amt', 'amount')\n \n     # Simulated incoming data with a missing column 'amount' and extra 'amt'\n     incoming = [\n",
+  "explanation": "Inserted withColumnRenamed('amt','amount')",
+  "tests_added": [
+    "tests/test_schema_mismatch_job_fix.py"
+  ],
+  "confidence": 0.9,
+  "actions_considered": [
+    "code_patch",
+    "data_provider_alert",
+    "schema_update"
+  ]
+}

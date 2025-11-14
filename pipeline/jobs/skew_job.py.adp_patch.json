@@ -1,0 +1,12 @@
+{
+  "applied": false,
+  "patch_text": "",
+  "explanation": "No safe automated change found for this job based on RCA.",
+  "tests_added": [],
+  "confidence": 0.0,
+  "actions_considered": [
+    "code_patch",
+    "repartition",
+    "salting"
+  ]
+}

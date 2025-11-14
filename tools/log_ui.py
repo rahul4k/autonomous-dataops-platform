@@ -4,11 +4,16 @@ Tiny Flask app to browse / view saved logs and parsed classification.
 Run: python tools/log_ui.py
 Visit: http://127.0.0.1:5000/
 """
+import sys
+from pathlib import Path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0,str(project_root))
 
 import os
 import json
 from flask import Flask, render_template_string, send_file, abort
 from agents.log_reader_agent import parse_log_file
+
 
 LOG_ROOT = "logs"
 app = Flask(__name__)

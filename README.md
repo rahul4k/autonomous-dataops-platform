@@ -53,3 +53,178 @@ Unit and integration tests for each agent.
 git clone <your_repo_url>
 cd autonomous-dataops-platform
 
+## Architecture Diagram
+                         ┌─────────────────────────────────────┐
+                         │         Production Pipelines        │
+                         │  (Airflow / Dataproc / Glue / EMR)  │
+                         └───────────────┬─────────────────────┘
+                                         │
+                                         │ Job Fails
+                                         ▼
+                      ┌──────────────────────────────────────────┐
+                      │          Failure Event Producer          │
+                      │   (Push event: log_path, job_id, etc.)  │
+                      └───────────────┬──────────────────────────┘
+                                      │
+                                      ▼
+                      ┌──────────────────────────────────────────┐
+                      │         ADP Event Orchestrator           │
+                      │ (Pub/Sub or Kafka or local scheduler)    │
+                      └───────────────┬──────────────────────────┘
+                                      │
+     ┌─────────────────────────────────┼────────────────────────────────┐
+     │                                 │                                │
+     ▼                                 ▼                                ▼
+
+┌──────────────────┐       ┌────────────────────────┐        ┌──────────────────────┐
+│ Log Reader Agent │       │   Root Cause Agent     │        │  Spark Metrics Agent │
+│------------------│       │------------------------│        │----------------------│
+│ Parse logs       │       │ Identify error type    │        │  Pull Spark UI JSON  │
+│ Classify failure │──────▶│ Extract diagnostics    │───────▶│  Identify skew/oom   │
+│ (regex/ML)       │       │ Suggest actions        │        │  Validate RCA        │
+└──────────────────┘       └────────────────────────┘        └──────────────────────┘
+                                      │
+                                      ▼
+                      ┌──────────────────────────────────────────┐
+                      │         Fixer / Code Optimizer Agent     │
+                      │   (AST-based safe code transformations)  │
+                      └───────────────────┬──────────────────────┘
+                                          │ Patched Code
+                                          ▼
+                       ┌─────────────────────────────────────────┐
+                       │      Fix → PR Orchestrator Agent       │
+                       │ Create branch, commit patch, open PR   │
+                       └───────────────────┬─────────────────────┘
+                                           │ Draft PR
+                                           ▼
+                        ┌────────────────────────────────────────┐
+                        │           GitHub / GitLab PR           │
+                        │   Human review + merge on approval     │
+                        └───────────────────┬────────────────────┘
+                                            │
+                                            ▼
+                      ┌──────────────────────────────────────────┐
+                      │   Slack / Teams / Email Notification     │
+                      └──────────────────────────────────────────┘
+
+High-Level Explanation 
+------------------------
+🚀 Autonomous DataOps Platform – System Overview
+
+The ADP system automatically detects, diagnoses, and fixes production data pipeline failures using a multi-agent, event-driven architecture:
+
+Failure Event Producer captures job failures from Airflow/Dataproc and emits machine-readable events.
+
+ADP Orchestrator routes failure events to specialized agents.
+
+Log Reader Agent parses raw logs, classifies errors, and extracts structured signals.
+
+Root Cause Agent applies rule-based + Spark-aware logic to identify the root cause.
+
+Spark Metrics Agent fetches stage/task metrics from Spark UI to validate skew, OOM, shuffle issues, etc.
+
+Fixer/Optimizer Agent applies AST-based safe code transformations (rename columns, broadcast joins, repartition).
+
+Fix–PR Orchestrator creates a GitHub branch, commits patched code, and opens a draft PR.
+
+Notification Agent posts PR links + RCA summary to Slack or email.
+
+Human reviewer validates and merges the PR.
+
+This architecture mirrors how real SRE/DataOps automation systems work at Netflix, Uber, and Databricks.
+
+Component-Level Breakdown (Put in your README or slide deck)
+---------------------------------------------------------------
+1. Production Pipelines
+
+Distributed Spark pipelines running on Dataproc/EMR/Glue
+
+Triggers failure events on retries/exhaustion
+
+2. Failure Event Producer
+
+Airflow failure callback
+
+Writes event.json (dag_id, task_id, log_url, local_log_path)
+
+3. Event Orchestrator
+
+Simple local Python orchestrator OR Pub/Sub/Kafka
+
+Dispatches events to agents
+
+4. Log Reader Agent
+
+Regex + structured log parsing
+
+Detects error classes: OOM, schema, skew, missing file, Py4J, SparkException
+
+Outputs log_summary.json
+
+5. Root Cause Agent
+
+Applies rule-based RCA + heuristics
+
+Infers whether to:
+
+Broadcast join
+
+Add repartition
+
+Rename columns
+
+Increase executor memory
+
+Fix schema drift
+
+6. Spark Metrics Agent
+
+Pulls Spark History Server API JSON
+
+Detects:
+
+Stage retries
+
+Task failures
+
+Stragglers
+
+Skew ratios
+
+OOM signals
+
+Shuffle blowups
+
+7. Fixer / Optimizer Agent
+
+Uses AST-based code modification (libcst)
+
+Safe, deterministic changes:
+
+Add broadcast()
+
+Insert .repartition()
+
+Add withColumnRenamed()
+
+Insert config hints
+
+8. Fix → PR Orchestrator
+
+Creates a branch
+
+Commits patched code
+
+Generates a draft PR with:
+
+Patch diff
+
+RCA summary
+
+Explainability
+
+Confidence score
+
+9. Notification Agent
+
+Posts PR URL + summary to Slack/Teams

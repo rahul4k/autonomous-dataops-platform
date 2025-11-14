@@ -1,0 +1,32 @@
+{
+  "log_path": "logs/schema_mismatch/run_2025-11-13_16-55-21.log",
+  "detected_at": "2025-11-13T14:07:29.519364Z",
+  "root_cause": "Schema mismatch between expected and incoming data fields.",
+  "evidence": [
+    "Detected missing columns: ['amount']",
+    "Detected extra columns: ['amt']"
+  ],
+  "suggested_action_types": [
+    "schema_update",
+    "code_patch",
+    "data_provider_alert"
+  ],
+  "diagnostics": {
+    "missing_columns": [
+      "amount"
+    ],
+    "extra_columns": [
+      "amt"
+    ]
+  },
+  "confidence": 0.9,
+  "remediation_hint": "Update StructType/read schema or add tolerant parsing and notify data provider.",
+  "classification": {
+    "error_type": "SchemaMismatch",
+    "error_message": "Job failed: SchemaMismatchError: missing columns: ['amount']; extra columns: ['amt']",
+    "matched_patterns": [
+      "SchemaMismatch"
+    ],
+    "confidence": 0.6
+  }
+}

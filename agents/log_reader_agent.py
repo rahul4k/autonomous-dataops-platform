@@ -1,4 +1,4 @@
-# agents/log_reader/log_reader_agent.py
+# agents/log_reader_agent.py
 """
 Simple Log Reader Agent.
 - Reads a log file path (local).

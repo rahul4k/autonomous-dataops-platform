@@ -1,0 +1,8 @@
+{
+  "error_type": "Skew",
+  "error_message": "WARN: PerformanceAlert: extreme key skew detected on column sk, skew_ratio=0.951",
+  "matched_patterns": [
+    "Skew"
+  ],
+  "confidence": 0.6
+}

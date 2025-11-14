@@ -1,0 +1,28 @@
+{
+    "broadcast_join": {
+      "description": "Apply broadcast join when one side is small",
+      "trigger_actions": ["optimize_join", "broadcast_or_repartition", "code_patch"],
+      "confidence_base": 0.8
+    },
+    "repartition_before_groupby": {
+      "description": "Add repartition before expensive groupBy/aggregate",
+      "trigger_actions": ["optimize_join", "repartition", "code_patch"],
+      "confidence_base": 0.7
+    },
+    "rename_column_schema": {
+      "description": "Rename incoming column to expected name",
+      "trigger_actions": ["schema_update", "code_patch"],
+      "confidence_base": 0.9
+    },
+    "salting_skew": {
+      "description": "Add salting for extreme skew",
+      "trigger_actions": ["salting", "code_patch"],
+      "confidence_base": 0.7
+    },
+    "config_hint": {
+      "description": "Suggest executor memory/config changes",
+      "trigger_actions": ["increase_executor_memory", "config_change"],
+      "confidence_base": 0.6
+    }
+  }
+  

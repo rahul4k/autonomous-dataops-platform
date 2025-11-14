@@ -1,0 +1,28 @@
+{
+  "log_path": "logs/skew/run_2025-11-13_16-56-31.log",
+  "detected_at": "2025-11-13T14:07:29.520140Z",
+  "root_cause": "Data skew on join key leading to performance hotspot.",
+  "evidence": [
+    "Detected skew_ratio=0.951",
+    "shuffle_bytes=20000000"
+  ],
+  "suggested_action_types": [
+    "code_patch",
+    "salting",
+    "repartition"
+  ],
+  "diagnostics": {
+    "skew_ratio": 0.951,
+    "shuffle_bytes": 20000000
+  },
+  "confidence": 0.9,
+  "remediation_hint": "Add salting on the join key or pre-aggregate hot partitions; consider repartitioning before join.",
+  "classification": {
+    "error_type": "Skew",
+    "error_message": "WARN: PerformanceAlert: extreme key skew detected on column sk, skew_ratio=0.951",
+    "matched_patterns": [
+      "Skew"
+    ],
+    "confidence": 0.6
+  }
+}

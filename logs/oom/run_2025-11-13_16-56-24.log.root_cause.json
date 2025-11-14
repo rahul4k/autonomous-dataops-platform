@@ -1,0 +1,24 @@
+{
+  "log_path": "logs/oom/run_2025-11-13_16-56-24.log",
+  "detected_at": "2025-11-13T14:07:29.518519Z",
+  "root_cause": "OutOfMemory (OOM) encountered during job execution.",
+  "evidence": [
+    "Detected Java/Python OutOfMemoryError in logs."
+  ],
+  "suggested_action_types": [
+    "config_change",
+    "increase_executor_memory",
+    "optimize_transformations"
+  ],
+  "diagnostics": {},
+  "confidence": 0.9,
+  "remediation_hint": "Consider increasing executor memory, reducing shuffle, or using broadcast joins for small dimension tables.",
+  "classification": {
+    "error_type": "OOM",
+    "error_message": "ERROR: java.lang.OutOfMemoryError: Java heap space - simulated by demo",
+    "matched_patterns": [
+      "OOM"
+    ],
+    "confidence": 0.6
+  }
+}
