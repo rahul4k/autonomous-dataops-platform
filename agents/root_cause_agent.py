@@ -20,15 +20,26 @@ Design:
 import os
 import json
 import re
+import yaml
 from datetime import datetime
 from typing import Dict, Any, Optional
 
 from agents.log_reader_agent import read_log_file, classify_error
 
+def load_config(path="config.yaml"):
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            return yaml.safe_load(f)
+    return {}
+
+CONFIG = load_config()
+RCA_CONFIG = CONFIG.get("root_cause", {})
+THRESHOLDS = RCA_CONFIG.get("thresholds", {})
+
 # Thresholds & heuristics
-SKEW_RATIO_THRESHOLD = 0.5
-BROADCAST_SIZE_THRESHOLD_BYTES = 100 * 1024 * 1024  # 100 MB heuristic (if known)
-SHUFFLE_BYTES_HIGH = 1_000_000_000  # 1GB
+SKEW_RATIO_THRESHOLD = THRESHOLDS.get("skew_ratio", 0.5)
+BROADCAST_SIZE_THRESHOLD_BYTES = THRESHOLDS.get("broadcast_size_bytes", 100 * 1024 * 1024)
+SHUFFLE_BYTES_HIGH = THRESHOLDS.get("shuffle_bytes_high", 1_000_000_000)
 
 def _safe_read(path: str, max_lines: int = 3000) -> str:
     try:
@@ -46,11 +57,14 @@ def _find_shuffle_bytes(text: str) -> Optional[int]:
     if m:
         try:
             return int(m.group(1))
-        except:
+        except ValueError:
             return None
     m2 = re.search(r"Estimated shuffle_bytes ~\s*([0-9,]+)", text, re.I)
     if m2:
-        return int(m2.group(1).replace(",", ""))
+        try:
+            return int(m2.group(1).replace(",", ""))
+        except ValueError:
+            return None
     return None
 
 def analyze_schema_mismatch(text: str, classification: Dict) -> Dict[str, Any]:

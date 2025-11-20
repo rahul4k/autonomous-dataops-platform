@@ -1,6 +1,6 @@
 {
   "log_path": "logs/oom/run_2025-11-13_16-56-24.log",
-  "detected_at": "2025-11-13T14:07:29.518519Z",
+  "detected_at": "2025-11-20T16:37:01.894142Z",
   "root_cause": "OutOfMemory (OOM) encountered during job execution.",
   "evidence": [
     "Detected Java/Python OutOfMemoryError in logs."

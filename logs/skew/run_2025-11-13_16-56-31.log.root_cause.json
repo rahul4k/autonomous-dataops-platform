@@ -1,6 +1,6 @@
 {
   "log_path": "logs/skew/run_2025-11-13_16-56-31.log",
-  "detected_at": "2025-11-13T14:07:29.520140Z",
+  "detected_at": "2025-11-20T16:37:01.897299Z",
   "root_cause": "Data skew on join key leading to performance hotspot.",
   "evidence": [
     "Detected skew_ratio=0.951",

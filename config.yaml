@@ -1,0 +1,15 @@
+log_reader:
+  patterns:
+    SchemaMismatch: "(SchemaMismatch|missing columns|missing column|unexpected column)"
+    OOM: "OutOfMemoryError|OOM|java.lang.OutOfMemoryError|GC overhead|heap space"
+    Skew: "skew|hotkey|skew_ratio|PerformanceAlert"
+    GC: "GC overhead|full gc|garbage collection"
+    MissingFile: "(NoSuchFileException|FileNotFoundException|File not found|not found:)"
+    AuthError: "Auth|Authentication|permission denied|403|AccessDenied"
+  max_lines: 3000
+
+root_cause:
+  thresholds:
+    skew_ratio: 0.5
+    broadcast_size_bytes: 104857600  # 100 MB
+    shuffle_bytes_high: 1000000000   # 1 GB

@@ -1,10 +1,10 @@
 --- pipeline/jobs/schema_mismatch_job.py
 +++ pipeline/jobs/schema_mismatch_job.py.patched
-@@ -5,6 +5,7 @@
- def run():
-     # Simulated schema expectation
-     expected_columns = {"user_id", "name", "created_at", "amount"}
-+expected_columns = expected_columns.withColumnRenamed('amt', 'amount')
- 
-     # Simulated incoming data with a missing column 'amount' and extra 'amt'
-     incoming = [
+@@ -24,6 +24,7 @@
+     try:
+         # This line triggers the AST fixer
+         df_read = spark.read.parquet("s3://bucket/dummy") 
++df_read = df_read.withColumnRenamed('amt','amount')
+     except Exception:
+         # We ignore the error because we don't have S3 access
+         pass

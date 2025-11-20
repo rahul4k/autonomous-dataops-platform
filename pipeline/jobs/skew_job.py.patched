@@ -3,6 +3,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, lit
 import sys
 import random
+from pyspark.sql.functions import broadcast
 
 def run():
     spark = SparkSession.builder.appName("SkewJob").getOrCreate()
@@ -23,12 +24,12 @@ def run():
     df_grouped = df.groupBy("sk").count()
     
     # Also simulate a join for broadcast test
-    # AST Fixer looks for: df = df.join(dim, on='key')
+    # AST Fixer looks for: df = df.join(broadcast(dim), on='key')
     dim_data = [{"sk": "hotkey", "desc": "hot"}, {"sk": "key_1", "desc": "one"}]
     dim_df = spark.createDataFrame(dim_data)
     
     # This matches the pattern for broadcast injection
-    df_joined = df.join(dim_df, on='sk')
+    df_joined = df.join(broadcast(dim_df), on='sk')
     
     # Force evaluation
     count = df_joined.count()

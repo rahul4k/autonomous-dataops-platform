@@ -139,10 +139,8 @@ class InsertRenameAfterReadTransformer(cst.CSTTransformer):
         # track names for which we inserted rename to avoid duplicates in same module
         self.inserted_for = set()
 
-    def leave_Module(self, original_node: cst.Module, updated_node: cst.Module) -> cst.Module:
-        # We'll reconstruct module with additional statements inserted
+    def _process_body(self, body: List[cst.BaseStatement]) -> List[cst.BaseStatement]:
         new_body = []
-        body = list(updated_node.body)
         i = 0
         while i < len(body):
             stmt = body[i]
@@ -168,6 +166,14 @@ class InsertRenameAfterReadTransformer(cst.CSTTransformer):
                     self.inserted_for.add(df_name)
                     self.changed = True
             i += 1
+        return new_body
+
+    def leave_Module(self, original_node: cst.Module, updated_node: cst.Module) -> cst.Module:
+        new_body = self._process_body(list(updated_node.body))
+        return updated_node.with_changes(body=new_body)
+
+    def leave_IndentedBlock(self, original_node: cst.IndentedBlock, updated_node: cst.IndentedBlock) -> cst.IndentedBlock:
+        new_body = self._process_body(list(updated_node.body))
         return updated_node.with_changes(body=new_body)
 
 
@@ -186,14 +192,14 @@ class ImportInserter(cst.CSTTransformer):
         # Check existing imports
         has_broadcast = False
         for stmt in updated_node.body:
-            if m.matches(stmt, m.SimpleStatementLine(body=[m.FromImport(module=m.Attribute(value=m.Name("pyspark"), attr=m.Name("sql")), names=[m.ImportAlias(name=m.Name("functions"))])])):
+            if m.matches(stmt, m.SimpleStatementLine(body=[m.ImportFrom(module=m.Attribute(value=m.Name("pyspark"), attr=m.Name("sql")), names=[m.ImportAlias(name=m.Name("functions"))])])):
                 # This matches `from pyspark.sql import functions` not exact; we check names later.
                 pass
-            if m.matches(stmt, m.SimpleStatementLine(body=[m.FromImport(module=m.Name("pyspark.sql.functions"), names=[m.ImportAlias(name=m.Name("broadcast"))])])):
+            if m.matches(stmt, m.SimpleStatementLine(body=[m.ImportFrom(module=m.Name("pyspark.sql.functions"), names=[m.ImportAlias(name=m.Name("broadcast"))])])):
                 has_broadcast = True
                 break
             # also check `from pyspark.sql.functions import broadcast` as Name token above
-            if m.matches(stmt, m.SimpleStatementLine(body=[m.FromImport(module=m.Attribute(value=m.Attribute(value=m.Name("pyspark"), attr=m.Name("sql")), attr=m.Name("functions")), names=[m.ImportAlias(name=m.Name("broadcast"))])])):
+            if m.matches(stmt, m.SimpleStatementLine(body=[m.ImportFrom(module=m.Attribute(value=m.Attribute(value=m.Name("pyspark"), attr=m.Name("sql")), attr=m.Name("functions")), names=[m.ImportAlias(name=m.Name("broadcast"))])])):
                 has_broadcast = True
                 break
             # generic check strings
@@ -215,7 +221,7 @@ class ImportInserter(cst.CSTTransformer):
         if new_body and isinstance(new_body[0], cst.SimpleStatementLine) and new_body[0].body and isinstance(new_body[0].body[0], cst.Expr) and isinstance(new_body[0].body[0].value, cst.SimpleString):
             insert_idx = 1
         # Insert import
-        import_stmt = cst.SimpleStatementLine([cst.FromImport(module=cst.Attribute(value=cst.Attribute(value=cst.Name("pyspark"), attr=cst.Name("sql")), attr=cst.Name("functions")), names=[cst.ImportAlias(name=cst.Name("broadcast"))])])
+        import_stmt = cst.SimpleStatementLine([cst.ImportFrom(module=cst.Attribute(value=cst.Attribute(value=cst.Name("pyspark"), attr=cst.Name("sql")), attr=cst.Name("functions")), names=[cst.ImportAlias(name=cst.Name("broadcast"))])])
         new_body.insert(insert_idx, import_stmt)
         self.inserted = True
         return updated_node.with_changes(body=new_body)

@@ -11,26 +11,49 @@ Notes
 
 import re
 import json
+import os
+import yaml
 from typing import Dict, List
+
+def load_config(path="config.yaml"):
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            return yaml.safe_load(f)
+    return {}
+
+CONFIG = load_config()
+LOG_READER_CONFIG = CONFIG.get("log_reader", {})
+PATTERNS_CONFIG = LOG_READER_CONFIG.get("patterns", {})
 
 # Precompiled patterns
 _PATTERNS = {
-    "SchemaMismatch": re.compile(r"(SchemaMismatch|missing columns|missing column|unexpected column)", re.I),
-    "OOM": re.compile(r"OutOfMemoryError|OOM|java.lang.OutOfMemoryError|GC overhead|heap space", re.I),
-    "Skew": re.compile(r"skew|hotkey|skew_ratio|PerformanceAlert", re.I),
-    "GC": re.compile(r"GC overhead|full gc|garbage collection", re.I),
-    "MissingFile": re.compile(r"(NoSuchFileException|FileNotFoundException|File not found|not found:)", re.I),
-    "AuthError": re.compile(r"Auth|Authentication|permission denied|403|AccessDenied", re.I),
-    # fallback 'Other' will be used when none of above match
+    name: re.compile(pattern, re.I)
+    for name, pattern in PATTERNS_CONFIG.items()
 }
+
+# Fallback if config is missing
+if not _PATTERNS:
+    _PATTERNS = {
+        "SchemaMismatch": re.compile(r"(SchemaMismatch|missing columns|missing column|unexpected column)", re.I),
+        "OOM": re.compile(r"OutOfMemoryError|OOM|java.lang.OutOfMemoryError|GC overhead|heap space", re.I),
+        "Skew": re.compile(r"skew|hotkey|skew_ratio|PerformanceAlert", re.I),
+        "GC": re.compile(r"GC overhead|full gc|garbage collection", re.I),
+        "MissingFile": re.compile(r"(NoSuchFileException|FileNotFoundException|File not found|not found:)", re.I),
+        "AuthError": re.compile(r"Auth|Authentication|permission denied|403|AccessDenied", re.I),
+    }
 
 def read_log_file(path: str, max_lines: int = 3000) -> str:
     """Read log file and return last max_lines of content as a single string."""
-    with open(path, "r", errors="ignore") as f:
-        lines = f.readlines()
-    # keep only last N lines so agent works with bounded size
-    trimmed = lines[-max_lines:]
-    return "".join(trimmed)
+    max_lines = LOG_READER_CONFIG.get("max_lines", max_lines)
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            lines = f.readlines()
+        # keep only last N lines so agent works with bounded size
+        trimmed = lines[-max_lines:]
+        return "".join(trimmed)
+    except Exception as e:
+        print(f"Error reading log file {path}: {e}")
+        return ""
 
 def classify_error(log_text: str) -> Dict:
     """
